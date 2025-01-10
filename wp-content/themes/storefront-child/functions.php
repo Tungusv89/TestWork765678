@@ -46,3 +46,59 @@ function register_post_types()
 		'query_var'           => true,
 	]);
 }
+
+// Добавляем метабокс в "Cities"
+add_action('add_meta_boxes', 'add_lat_long_metabox');
+function add_lat_long_metabox()
+{
+	add_meta_box(
+		'lat_long_meta',      // Идентификатор
+		'Координаты города',  // Заголовок
+		'display_lat_long_metabox',  // Функция для отображения
+		'Cities',              // Тип записи
+		'normal',
+		'high'
+	);
+}
+
+// Функция для отображения метабокса
+function display_lat_long_metabox($post)
+{
+	// Получаем значения произвольных полей, если они уже сохранены
+	$latitude = get_post_meta($post->ID, '_latitude', true);
+	$longitude = get_post_meta($post->ID, '_longitude', true);
+?>
+	<label for="latitude">Широта:</label>
+	<input type="text" id="latitude" name="latitude" value="<?php echo esc_attr($latitude); ?>" />
+	<br />
+	<label for="longitude">Долгота:</label>
+	<input type="text" id="longitude" name="longitude" value="<?php echo esc_attr($longitude); ?>" />
+<?php
+	// Добавляем nonce для безопасности
+	wp_nonce_field('save_lat_long_meta', 'lat_long_nonce');
+}
+
+// Сохраняем значения метаполей при сохранении записи
+add_action('save_post', 'save_lat_long_meta');
+function save_lat_long_meta($post_id)
+{
+	// Проверяем nonce для безопасности
+	if (!isset($_POST['lat_long_nonce']) || !wp_verify_nonce($_POST['lat_long_nonce'], 'save_lat_long_meta')) {
+		return $post_id;
+	}
+
+	// Проверяем возможность редактирования записи
+	if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) {
+		return $post_id;
+	}
+	if (!current_user_can('edit_post', $post_id)) {
+		return $post_id;
+	}
+
+	// Сохраняем значения метаполей
+	$latitude = sanitize_text_field($_POST['latitude']);
+	$longitude = sanitize_text_field($_POST['longitude']);
+
+	update_post_meta($post_id, '_latitude', $latitude);
+	update_post_meta($post_id, '_longitude', $longitude);
+}
