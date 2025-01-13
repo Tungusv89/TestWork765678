@@ -7,8 +7,8 @@ function register_post_types()
 {
 
 	// Регистрируем тип записи "Cities"
-	register_post_type('Cities', [
-		'label'  => null,
+	register_post_type('cities', [
+		'label'  => 'Cities',
 		'labels' => [
 			'name'               => 'Cities', // основное название для типа записи
 			'singular_name'      => 'City', // название для одной записи этого типа
@@ -27,10 +27,10 @@ function register_post_types()
 		'public'                 => true,
 		// 'publicly_queryable'  => null, // зависит от public
 		// 'exclude_from_search' => null, // зависит от public
-		// 'show_ui'             => null, // зависит от public
-		// 'show_in_nav_menus'   => null, // зависит от public
-		'show_in_menu'           => null, // показывать ли в меню админки
-		// 'show_in_admin_bar'   => null, // зависит от show_in_menu
+		'show_ui'             => true, // зависит от public
+		'show_in_nav_menus'   => true, // зависит от public
+		'show_in_menu'           => true, // показывать ли в меню админки
+		'show_in_admin_bar'   => true, // зависит от show_in_menu
 		'show_in_rest'        => null, // добавить в REST API. C WP 4.7
 		'rest_base'           => null, // $post_type. C WP 4.7
 		'menu_position'       => null,
@@ -38,12 +38,42 @@ function register_post_types()
 		//'capability_type'   => 'post',
 		//'capabilities'      => 'post', // массив дополнительных прав для этого типа записи
 		//'map_meta_cap'      => null, // Ставим true чтобы включить дефолтный обработчик специальных прав
-		'hierarchical'        => false,
+		'hierarchical'        => true,
 		'supports'            => ['title', 'editor'], // 'title','editor','author','thumbnail','excerpt','trackbacks','custom-fields','comments','revisions','page-attributes','post-formats'
-		'taxonomies'          => [],
-		'has_archive'         => false,
+		'taxonomies'          => ['countries'],
+		'has_archive'         => true,
 		'rewrite'             => true,
 		'query_var'           => true,
+	]);
+}
+
+// Регистрация таксономии "Countries"
+add_action('init', 'register_countries_taxonomy');
+function register_countries_taxonomy()
+{
+	register_taxonomy('Countries', ['cities'], [
+		'label' => 'Countries',
+		'labels' => [
+			'name' => 'Countries',
+			'singular_name' => 'Country',
+			'search_items' => 'Искать Countries',
+			'all_items' => 'Все Countries',
+			'parent_item' => 'Родительская Country',
+			'parent_item_colon' => 'Родительская Country:',
+			'edit_item' => 'Редактировать Country',
+			'update_item' => 'Обновить Country',
+			'add_new_item' => 'Добавить новую Country',
+			'new_item_name' => 'Новое название Country',
+			'menu_name' => 'Countries',
+		],
+		'public' => true,
+		'hierarchical' => true,
+		'show_ui' => true,
+		'show_in_menu' => true,
+		'show_admin_column' => true,
+		'show_in_rest' => true,
+		'rest_base' => 'countries',
+		'rewrite' => ['slug' => 'countries'],
 	]);
 }
 
