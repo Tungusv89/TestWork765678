@@ -135,3 +135,58 @@ function save_lat_long_meta($post_id)
 
 // Виджет погоды
 include_once get_stylesheet_directory() . '/inc/widgets/weather.php';
+
+//Ajax
+add_action('wp_ajax_get_cities', 'get_cities_ajax_handler');
+add_action('wp_ajax_nopriv_get_cities', 'get_cities_ajax_handler');
+
+function get_cities_ajax_handler()
+{
+	global $wpdb;
+
+	$search = isset($_POST['search']) ? sanitize_text_field($_POST['search']) : '';
+	$query = "SELECT * FROM {$wpdb->prefix}cities";
+
+	if (!empty($search)) {
+		$query .= $wpdb->prepare(" WHERE city LIKE %s", '%' . $wpdb->esc_like($search) . '%');
+	}
+
+	$results = $wpdb->get_results($query);
+
+	if ($results) {
+		echo '<table>';
+		echo '<thead><tr><th>Country</th><th>City</th><th>Temperature (°C)</th></tr></thead><tbody>';
+		foreach ($results as $row) {
+			echo '<tr>';
+			echo '<td>' . esc_html($row->country) . '</td>';
+			echo '<td>' . esc_html($row->city) . '</td>';
+			echo '<td>' . esc_html($row->temperature) . '</td>';
+			echo '</tr>';
+		}
+		echo '</tbody></table>';
+	} else {
+		echo '<p>No results found.</p>';
+	}
+
+	wp_die(); // Завершение AJAX-запроса
+}
+
+// Localizate ajax
+function enqueue_custom_scripts()
+{
+	wp_enqueue_script('cities-ajax', get_stylesheet_directory_uri() . '/assets/js/cities-ajax.js', ['jquery'], null, true);
+	wp_localize_script('cities-ajax', 'ajaxData', [
+		'ajax_url' => admin_url('admin-ajax.php'),
+	]);
+}
+add_action('wp_enqueue_scripts', 'enqueue_custom_scripts');
+
+
+// Хуки
+add_action('before_cities_table', function () {
+	echo '<p>Welcome to the cities and weather table. Use the search above to find specific cities.</p>';
+});
+
+add_action('after_cities_table', function () {
+	echo '<p>Thank you for using our service! Stay updated on your city\'s weather.</p>';
+});
