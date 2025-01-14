@@ -132,3 +132,6 @@ function save_lat_long_meta($post_id)
 	update_post_meta($post_id, '_latitude', $latitude);
 	update_post_meta($post_id, '_longitude', $longitude);
 }
+
+// Виджет погоды
+include_once get_stylesheet_directory() . '/inc/widgets/weather.php';
